@@ -28,6 +28,9 @@ namespace BookStoreApplication.Models
         [Min(0)]
         public int CountInStock { get; set; }
 
-        public Brand Brand { get; set; }
+        
+        public int BrandId { get; set; }
+
+        public virtual Brand Brand { get; set; }
     }
 }

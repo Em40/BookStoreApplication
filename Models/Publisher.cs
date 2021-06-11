@@ -14,6 +14,6 @@ namespace BookStoreApplication.Models
         [MaxLength(32)]
         public string Name { get; set; }
 
-        public ICollection<Magazine> Magazines { get; set; }
+        public virtual ICollection<Magazine> Magazines { get; set; }
     }
 }

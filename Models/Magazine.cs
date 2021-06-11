@@ -27,6 +27,9 @@ namespace BookStoreApplication.Models
         [Min(0)]
         public int CountInStock { get; set; }
 
-        public Publisher Publisher { get; set; }
+        [Required]
+        public int PublisherId { get; set; }
+
+        public virtual Publisher Publisher { get; set; }
     }
 }

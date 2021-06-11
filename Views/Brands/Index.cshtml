@@ -1,28 +1,19 @@
-﻿@model IEnumerable<BookStoreApplication.Models.OfficeSupply>
+﻿@model IEnumerable<BookStoreApplication.Models.Brand>
 
 @{
     ViewData["Title"] = "Index";
 }
 
-<h1>Office supplies</h1>
+<h1>Index</h1>
 
 <p>
     <a asp-action="Create">Create New</a>
 </p>
-<p>
-    <a asp-area="" asp-controller="OfficeSupplies" asp-action="SearchForm">Search</a>
-</p>
-<table class="table table-striped table-borderless">
+<table class="table">
     <thead>
         <tr>
             <th>
                 @Html.DisplayNameFor(model => model.Name)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Price)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Brand)
             </th>
             <th></th>
         </tr>
@@ -32,12 +23,6 @@
         <tr>
             <td>
                 @Html.DisplayFor(modelItem => item.Name)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Price)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Brand.Name)
             </td>
             <td>
                 <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |

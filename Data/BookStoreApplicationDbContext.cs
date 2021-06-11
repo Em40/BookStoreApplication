@@ -34,6 +34,9 @@ namespace BookStoreApplication.Data
         {
             base.OnModelCreating(modelBuilder);
             modelBuilder.Entity<BookAuthor>().HasKey(ba => new { ba.BookId, ba.AuthorId });
+            modelBuilder.Entity<Publisher>()
+                    .HasMany(p => p.Magazines)
+                    .WithOne(m => m.Publisher);
         }
     }
 }

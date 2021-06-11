@@ -7,39 +7,26 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using BookStoreApplication.Data;
 using BookStoreApplication.Models;
-using Microsoft.AspNetCore.Authorization;
 
 namespace BookStoreApplication.Controllers
 {
-    public class MagazinesController : Controller
+    public class BookAuthorsController : Controller
     {
         private readonly BookStoreApplicationDbContext _context;
 
-        public MagazinesController(BookStoreApplicationDbContext context)
+        public BookAuthorsController(BookStoreApplicationDbContext context)
         {
             _context = context;
         }
 
-        // GET: Magazines
+        // GET: BookAuthors
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Magazines.Include(m => m.Publisher).ToListAsync());
+            var bookStoreApplicationDbContext = _context.BookAuthors.Include(b => b.Author).Include(b => b.Book);
+            return View(await bookStoreApplicationDbContext.ToListAsync());
         }
 
-        // GET: Magazines/SearchForm
-        public IActionResult SearchForm()
-        {
-            return View();
-        }
-
-        // POST: Magazines/SearchResults
-        public async Task<IActionResult> SearchResults(string searchPhrase)
-        {
-            return View("Index", await _context.Magazines.Where(t => t.Title.Contains(searchPhrase)).ToListAsync());
-        }
-
-        // GET: Magazines/Details/5
-        [Authorize]
+        // GET: BookAuthors/Details/5
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -47,44 +34,45 @@ namespace BookStoreApplication.Controllers
                 return NotFound();
             }
 
-            var magazine = await _context.Magazines
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (magazine == null)
+            var bookAuthor = await _context.BookAuthors
+                .Include(b => b.Author)
+                .Include(b => b.Book)
+                .FirstOrDefaultAsync(m => m.BookId == id);
+            if (bookAuthor == null)
             {
                 return NotFound();
             }
 
-            return View(magazine);
+            return View(bookAuthor);
         }
 
-        // GET: Magazines/Create
-        [Authorize(Roles = "Admin")]
+        // GET: BookAuthors/Create
         public IActionResult Create()
         {
-            IEnumerable<Publisher> publishers = _context.Publishers.Select(publisher => new Publisher { Id = publisher.Id, Name = publisher.Name }).ToList();
-            ViewBag.Publishers = publishers;
+            ViewData["AuthorId"] = new SelectList(_context.Authors, "Id", "Id");
+            ViewData["BookId"] = new SelectList(_context.Books, "Id", "Id");
             return View();
         }
 
-        // POST: Magazines/Create
+        // POST: BookAuthors/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Create([Bind("Id,Title,Type,NumberOfPages,Price,CountInStock,PublisherId")] Magazine magazine)
+        public async Task<IActionResult> Create([Bind("AuthorId,BookId")] BookAuthor bookAuthor)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(magazine);
+                _context.Add(bookAuthor);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            return View(magazine);
+            ViewData["AuthorId"] = new SelectList(_context.Authors, "Id", "Id", bookAuthor.AuthorId);
+            ViewData["BookId"] = new SelectList(_context.Books, "Id", "Id", bookAuthor.BookId);
+            return View(bookAuthor);
         }
 
-        // GET: Magazines/Edit/5
-        [Authorize(Roles = "Admin")]
+        // GET: BookAuthors/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -92,23 +80,24 @@ namespace BookStoreApplication.Controllers
                 return NotFound();
             }
 
-            var magazine = await _context.Magazines.FindAsync(id);
-            if (magazine == null)
+            var bookAuthor = await _context.BookAuthors.FindAsync(id);
+            if (bookAuthor == null)
             {
                 return NotFound();
             }
-            return View(magazine);
+            ViewData["AuthorId"] = new SelectList(_context.Authors, "Id", "Id", bookAuthor.AuthorId);
+            ViewData["BookId"] = new SelectList(_context.Books, "Id", "Id", bookAuthor.BookId);
+            return View(bookAuthor);
         }
 
-        // POST: Magazines/Edit/5
+        // POST: BookAuthors/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,Type,NumberOfPages,Price,CountInStock")] Magazine magazine)
+        public async Task<IActionResult> Edit(int id, [Bind("AuthorId,BookId")] BookAuthor bookAuthor)
         {
-            if (id != magazine.Id)
+            if (id != bookAuthor.BookId)
             {
                 return NotFound();
             }
@@ -117,12 +106,12 @@ namespace BookStoreApplication.Controllers
             {
                 try
                 {
-                    _context.Update(magazine);
+                    _context.Update(bookAuthor);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!MagazineExists(magazine.Id))
+                    if (!BookAuthorExists(bookAuthor.BookId))
                     {
                         return NotFound();
                     }
@@ -133,11 +122,12 @@ namespace BookStoreApplication.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            return View(magazine);
+            ViewData["AuthorId"] = new SelectList(_context.Authors, "Id", "Id", bookAuthor.AuthorId);
+            ViewData["BookId"] = new SelectList(_context.Books, "Id", "Id", bookAuthor.BookId);
+            return View(bookAuthor);
         }
 
-        // GET: Magazines/Delete/5
-        [Authorize(Roles = "Admin")]
+        // GET: BookAuthors/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -145,30 +135,32 @@ namespace BookStoreApplication.Controllers
                 return NotFound();
             }
 
-            var magazine = await _context.Magazines
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (magazine == null)
+            var bookAuthor = await _context.BookAuthors
+                .Include(b => b.Author)
+                .Include(b => b.Book)
+                .FirstOrDefaultAsync(m => m.BookId == id);
+            if (bookAuthor == null)
             {
                 return NotFound();
             }
 
-            return View(magazine);
+            return View(bookAuthor);
         }
 
-        // POST: Magazines/Delete/5
+        // POST: BookAuthors/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var magazine = await _context.Magazines.FindAsync(id);
-            _context.Magazines.Remove(magazine);
+            var bookAuthor = await _context.BookAuthors.FindAsync(id);
+            _context.BookAuthors.Remove(bookAuthor);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
-        private bool MagazineExists(int id)
+        private bool BookAuthorExists(int id)
         {
-            return _context.Magazines.Any(e => e.Id == id);
+            return _context.BookAuthors.Any(e => e.BookId == id);
         }
     }
 }

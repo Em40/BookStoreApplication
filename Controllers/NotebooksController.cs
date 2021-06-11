@@ -23,7 +23,7 @@ namespace BookStoreApplication.Controllers
         // GET: Notebooks
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Notebooks.ToListAsync());
+            return View(await _context.Notebooks.Include(n => n.Brand).ToListAsync());
         }
 
         // GET: Notebooks/SearchForm
@@ -61,6 +61,8 @@ namespace BookStoreApplication.Controllers
         [Authorize(Roles = "Admin")]
         public IActionResult Create()
         {
+            IEnumerable<Brand> brands = _context.Brands.Select(brand => new Brand { Id = brand.Id, Name = brand.Name }).ToList();
+            ViewBag.Brands = brands;
             return View();
         }
 
@@ -70,7 +72,7 @@ namespace BookStoreApplication.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Create([Bind("Id,Format,Type,NumberOfPages,Price,CountInStock")] Notebook notebook)
+        public async Task<IActionResult> Create([Bind("Id,Format,Type,NumberOfPages,Price,CountInStock,BrandId")] Notebook notebook)
         {
             if (ModelState.IsValid)
             {

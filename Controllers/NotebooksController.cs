@@ -47,7 +47,7 @@ namespace BookStoreApplication.Controllers
                 return NotFound();
             }
 
-            var notebook = await _context.Notebooks
+            var notebook = await _context.Notebooks.Include(n => n.Brand)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (notebook == null)
             {
@@ -87,6 +87,8 @@ namespace BookStoreApplication.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int? id)
         {
+            IEnumerable<Brand> brands = _context.Brands.Select(brand => new Brand { Id = brand.Id, Name = brand.Name }).ToList();
+            ViewBag.Brands = brands;
             if (id == null)
             {
                 return NotFound();
@@ -106,7 +108,7 @@ namespace BookStoreApplication.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Format,Type,NumberOfPages,Price,CountInStock")] Notebook notebook)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Format,Type,NumberOfPages,Price,CountInStock,BrandId")] Notebook notebook)
         {
             if (id != notebook.Id)
             {

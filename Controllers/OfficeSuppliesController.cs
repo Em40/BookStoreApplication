@@ -47,7 +47,7 @@ namespace BookStoreApplication.Controllers
                 return NotFound();
             }
 
-            var officeSupply = await _context.OfficeSupplies
+            var officeSupply = await _context.OfficeSupplies.Include(os => os.Brand)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (officeSupply == null)
             {
@@ -87,6 +87,8 @@ namespace BookStoreApplication.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int? id)
         {
+            IEnumerable<Brand> brands = _context.Brands.Select(brand => new Brand { Id = brand.Id, Name = brand.Name }).ToList();
+            ViewBag.Brands = brands;
             if (id == null)
             {
                 return NotFound();
@@ -106,7 +108,7 @@ namespace BookStoreApplication.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Price,CountInStock")] OfficeSupply officeSupply)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Price,CountInStock,BrandId")] OfficeSupply officeSupply)
         {
             if (id != officeSupply.Id)
             {

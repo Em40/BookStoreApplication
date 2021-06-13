@@ -47,7 +47,7 @@ namespace BookStoreApplication.Controllers
                 return NotFound();
             }
 
-            var magazine = await _context.Magazines
+            var magazine = await _context.Magazines.Include(m => m.Publisher)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (magazine == null)
             {
@@ -87,6 +87,8 @@ namespace BookStoreApplication.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int? id)
         {
+            IEnumerable<Publisher> publishers = _context.Publishers.Select(publisher => new Publisher { Id = publisher.Id, Name = publisher.Name }).ToList();
+            ViewBag.Publishers = publishers;
             if (id == null)
             {
                 return NotFound();
@@ -106,7 +108,7 @@ namespace BookStoreApplication.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,Type,NumberOfPages,Price,CountInStock")] Magazine magazine)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,Type,NumberOfPages,Price,CountInStock,PublisherId")] Magazine magazine)
         {
             if (id != magazine.Id)
             {
